@@ -1,0 +1,32 @@
+version: "2"
+services:
+  app:
+    depends_on:
+      - db
+    ports:
+      - 8000:8000
+    volumes:
+      - ./id_rsa:/root/id_rsa
+    env_file:
+      - "${DOTENV}"
+    environment:
+      SERVER_PORT: 8000
+      DB_NAME: 'covid_county'
+      DB_USER: 'covid_county'
+      DB_PASSWORD: 'covid_county'
+      DB_PORT: 5432
+      DB_HOST: db
+      LOG_LEVEL: debug
+    build:
+      dockerfile: infra/Dockerfile
+      context: .
+  db:
+    ports:
+      - 9999:5432
+    volumes:
+      - ./local/data:/var/lib/postgres
+    environment:
+      POSTGRES_PORT: 9999
+      POSTGRES_DB: covid_county
+    build:
+      context: ./infra/local/db

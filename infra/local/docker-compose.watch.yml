@@ -1,0 +1,9 @@
+version: "3.5"
+
+services:
+  app:
+    entrypoint: ["/scripts/watch.sh"]
+    volumes:
+      - ./scripts:/scripts
+      - .:/go/src/github.com/maxheckel/covid_county
+      - ${GOPATH}/pkg/mod:/go/pkg/mod
