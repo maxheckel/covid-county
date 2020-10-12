@@ -13,7 +13,7 @@ services:
       SERVER_PORT: 8000
       DB_NAME: 'covid_county'
       DB_USER: 'covid_county'
-      DB_PASSWORD: 'covid_county'
+      DB_PASSWORD: 'password'
       DB_PORT: 5432
       DB_HOST: db
       LOG_LEVEL: debug

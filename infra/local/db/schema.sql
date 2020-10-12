@@ -1,0 +1,9 @@
+CREATE USER covid_county WITH PASSWORD 'password';
+
+
+
+DROP SCHEMA IF EXISTS imports CASCADE;
+CREATE SCHEMA imports AUTHORIZATION covid_county;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA imports TO covid_county;
+
+
