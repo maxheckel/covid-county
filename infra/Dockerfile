@@ -9,6 +9,7 @@ RUN apk --no-cache add ca-certificates
 
 RUN mkdir /server
 ADD ./infra/bin /server/bin
+COPY ./web/dist /server/web/dist
 
 ADD ./infra/docker-run.sh /server/docker-run.sh
 RUN chmod +x /server/docker-run.sh

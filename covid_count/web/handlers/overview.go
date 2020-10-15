@@ -105,8 +105,10 @@ var counties = [88]string{
 }
 
 const isUpdatingCacheKey = "writing"
-const daysBack = 50
+const daysBack = 21
 const averagesKey = "averages"
+const interval = 7
+
 
 type Overview struct {
 	Manager *repository.Manager
@@ -136,13 +138,14 @@ func (o Overview) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	web.WriteJSON(w, 200, output)
 }
 
+
 func (o Overview) getSevenDayAverages() ([]responses.CountyWeekAverage, error){
 	caseResponse, err := o.Manager.Cases().GetAllCasesForDays(daysBack)
 	if err != nil {
 		return nil, err
 	}
 	caseResponse = populateZeroDays(caseResponse)
-	interval := 7
+
 	var output []responses.CountyWeekAverage
 	for _, county := range counties {
 
@@ -168,7 +171,7 @@ func (o Overview) getSevenDayAverages() ([]responses.CountyWeekAverage, error){
 			}
 			res.Averages = append(res.Averages, float64(sum/interval))
 		}
-
+		res.TrendingDirection = service.TrendingDirection(res.Averages)
 		output = append(output, res)
 	}
 	return output, nil

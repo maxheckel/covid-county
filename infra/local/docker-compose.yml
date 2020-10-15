@@ -5,8 +5,6 @@ services:
       - db
     ports:
       - 8000:8000
-    volumes:
-      - ./id_rsa:/root/id_rsa
     env_file:
       - "${DOTENV}"
     environment:
