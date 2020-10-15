@@ -7,6 +7,7 @@ import (
 	"github.com/maxheckel/covid_county/covid_count/service"
 	"github.com/maxheckel/covid_county/covid_count/web"
 	"github.com/maxheckel/covid_county/covid_count/web/responses"
+	"math"
 	"net/http"
 	"sort"
 	"strconv"
@@ -151,7 +152,7 @@ func (o Overview) getSevenDayAverages() ([]responses.CountyWeekAverage, error){
 
 		res := responses.CountyWeekAverage{
 			County:   county,
-			Averages: []float64{},
+			Averages: map[string]float64{},
 		}
 		countyCases := []*domain.DailyCases{}
 		for _, cases := range caseResponse {
@@ -169,9 +170,9 @@ func (o Overview) getSevenDayAverages() ([]responses.CountyWeekAverage, error){
 			for j := 0; j < interval; j++ {
 				sum += countyCases[i+j].Count
 			}
-			res.Averages = append(res.Averages, float64(sum/interval))
+			res.Averages[countyCases[i].Date.Format("2006-01-02")] = math.Ceil(float64(sum/interval))
 		}
-		res.TrendingDirection = service.TrendingDirection(res.Averages)
+		res.TrendingDirection, res.TrendingRatio = service.TrendingDirection(res.Averages, county)
 		output = append(output, res)
 	}
 	return output, nil

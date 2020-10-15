@@ -1,0 +1,14 @@
+<h1>COVID19 Ohio County Trends (Last 14 days)</h1>
+
+<h2>Trending Upwards</h2>
+<div class="category rising">
+  <app-county *ngFor="let county of trendingUp()" [county]="county" [trending]="'upwards'"></app-county>
+</div>
+<h2>Steady</h2>
+<div class="category steady">
+  <app-county *ngFor="let county of steady()" [county]="county" [trending]="'steady'"></app-county>
+</div>
+<h2>Trending Downwards</h2>
+<div class="category downward">
+  <app-county *ngFor="let county of trendingDownwards()" [county]="county" [trending]="'downwards'"></app-county>
+</div>

@@ -1,28 +1,43 @@
 package service
 
-import "math"
+import (
+	"math"
+	"time"
+)
 
-func TrendingDirection(averages []float64) string {
+func TrendingDirection(averages map[string]float64, county string) (string, float64) {
 	upCount, downCount := 0, 0
-	for i, val := range averages {
-		if i == len(averages)-1 {
-			break
-		}
-		if averages[i+1] < val {
-			upCount++
-		}
-		if averages[i+1] > val {
-			downCount++
+	for k, v := range averages{
+		date,_ := time.Parse("2006-01-02", k)
+		if nextDayVal, ok := averages[date.AddDate(0, 0, 1).Format("2006-01-02")]; ok {
+			if nextDayVal > v {
+				upCount++
+				continue
+			}
+			if nextDayVal < v {
+				downCount++
+				continue
+			}
 		}
 	}
+
 	diff := math.Abs(float64(upCount-downCount))
-	if diff < 2  {
-		return "Steady"
+	var resString string
+
+
+	if diff < float64(2) {
+		return "Steady", diff
 	}
 	if upCount > downCount {
-		return "Upwards"
+		resString = "Upwards"
 	}
-	return "Downwards"
+	if upCount < downCount {
+		resString = "Downwards"
+	}
+
+
+
+	return resString, diff
 }
 
 

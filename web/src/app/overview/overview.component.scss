@@ -1,0 +1,11 @@
+h1{
+  width: 100%;
+  text-align: center;
+}
+
+.category{
+  display: grid;
+  grid-template-columns: repeat(3, calc(33% - 40px));
+  grid-column-gap: 60px;
+  grid-row-gap: 50px;
+}

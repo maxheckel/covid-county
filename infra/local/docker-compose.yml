@@ -18,6 +18,8 @@ services:
     build:
       dockerfile: infra/Dockerfile
       context: .
+    volumes:
+    - ./web/dist:/server/web/dist
   db:
     ports:
       - 9999:5432
