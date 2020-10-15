@@ -15,6 +15,14 @@ CREATE TABLE if not exists imports.records
     hospitalized_count INT
 );
 
+CREATE TABLE if not exists imports.is_updating
+(
+    is_updating BOOLEAN DEFAULT false NOT NULL
+);
 
 alter table imports.records
+    owner to covid_county;
+
+
+alter table imports.is_updating
     owner to covid_county;

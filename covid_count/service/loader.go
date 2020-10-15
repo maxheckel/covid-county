@@ -14,44 +14,36 @@ import (
 )
 
 type Loader struct {
-	rr *repository.Record
+	Data *repository.Manager
 }
 
-func NewLoader(rr *repository.Record) Loader{
+func NewLoader(rm *repository.Manager) Loader{
 	return Loader{
-		rr: rr,
+		Data: rm,
 	}
 }
 
-func (l *Loader) Load(){
+func (l *Loader) Load() error{
 	path := l.getLatestFile()
 	csvReader := l.getReaderForCSV(path)
+
 	lineCount := l.getLineCount(path)
-	maxDate, err := l.rr.MaxDate("onset_date")
+	err := l.Data.IsUpdating().SetIsUpdating(true)
 	if err != nil {
-		log.Fatal(err)
+		return err
+	}
+	err = l.Data.Record().ClearPreviousRecords()
+	if err != nil {
+		return err
 	}
 	records := l.csvToRecords(csvReader, lineCount)
-	records = l.relevantRecords(maxDate, records)
-	err = l.rr.CreateMultiple(records[0:1])
+	err = l.Data.Record().CreateMultiple(records)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-
+	return l.Data.IsUpdating().SetIsUpdating(false)
 }
 
-func (l *Loader) relevantRecords(maxDate *time.Time, records []domain.Record) []domain.Record {
-	var relevantRecords []domain.Record
-	if maxDate == nil {
-		return records
-	}
-	for _, rec := range records {
-		if rec.OnsetDate.After(*maxDate) {
-			relevantRecords = append(relevantRecords, rec)
-		}
-	}
-	return relevantRecords
-}
 
 func (l *Loader) csvToRecords(csvReader *csv.Reader, lineCount int) []domain.Record {
 	var records []domain.Record

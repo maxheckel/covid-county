@@ -21,8 +21,12 @@ func main() {
 		panic(err)
 	}
 
-	rr := repository.NewRecord(database)
+	manager := repository.NewManager(database)
 
-	loader := service.NewLoader(rr)
-	loader.Load()
+	loader := service.NewLoader(manager)
+	err = loader.Load()
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
 }

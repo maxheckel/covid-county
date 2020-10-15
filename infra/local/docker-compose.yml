@@ -24,7 +24,7 @@ services:
     ports:
       - 9999:5432
     volumes:
-      - ./local/data:/var/lib/postgres
+      - ./local/data:/var/lib/postgresql/data
     environment:
       POSTGRES_PORT: 9999
       POSTGRES_DB: covid_county
