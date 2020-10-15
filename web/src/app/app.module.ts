@@ -8,12 +8,14 @@ import { OverviewComponent } from './overview/overview.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { CountyComponent } from './county/county.component';
 import {ChartsModule} from "ng2-charts";
+import { StatsComponent } from './stats/stats.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     OverviewComponent,
-    CountyComponent
+    CountyComponent,
+    StatsComponent
   ],
   imports: [
     BrowserModule,

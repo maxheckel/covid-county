@@ -1,5 +1,10 @@
-<h1>COVID19 Ohio County Trends (Last 14 days)</h1>
-
+<h1>COVID19 Ohio County Trends (7 day lag)</h1>
+<app-stats [up]="trendingUp()" [steady]="steady()" [down]="trendingDownwards()"></app-stats>
+<div class="form-group">
+  <label for="county-search">Search</label>
+  <input type="text" class="form-control" id="county-search" (keyup)="search($event)" placeholder="County Name">
+  <a href="#" *ngIf="searchText.length > 4" (click)="searchText = ''">Clear search</a>
+</div>
 <h2>Trending Upwards</h2>
 <div class="category rising">
   <app-county *ngFor="let county of trendingUp()" [county]="county" [trending]="'upwards'"></app-county>
@@ -11,4 +16,14 @@
 <h2>Trending Downwards</h2>
 <div class="category downward">
   <app-county *ngFor="let county of trendingDownwards()" [county]="county" [trending]="'downwards'"></app-county>
+</div>
+<div class="disclaimer">
+  <b>Notes:</b>
+  <ul>
+    <li>All data is provided as-is and complied from the CSV dump on the ODH site and manually keyed in numbers. I take NO responsibility for incorrect data.</li>
+    <li>Because the data lags all numbers are interpreted using data from 7 days before today.</li>
+    <li>This page will update at 2:15PM every day. Site may be unavailable for ~30 seconds during that time.</li>
+    <li>I collect no information on any users accessing the site.</li>
+    <li>All data sourced from <a href="https://coronavirus.ohio.gov">The ODH Coronavirus Webpage</a> </li>
+  </ul>
 </div>

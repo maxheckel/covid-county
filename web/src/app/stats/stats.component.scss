@@ -1,0 +1,33 @@
+@import "../styles/colors";
+.stats{
+  position: relative;
+  width: 80%;
+  margin-left: 10%;
+  display: grid;
+  grid-template-columns: repeat(3, 33%);
+  margin-top: 50px;
+  margin-bottom: 50px;
+  background-color: #f2f2f2;
+  padding: 10px;
+  border-radius: 10px;
+  .stat{
+    text-align: center;
+    border-right: 1px solid #ccc;
+    &:last-child{
+      border: 0px;
+    }
+    &.up{
+      color: $color-red;
+    }
+    &.steady{
+      color: $color-yellow;
+    }
+    &.down{
+      color: $color-green;
+    }
+    .number{
+      font-size: 52px;
+      display: block;
+    }
+  }
+}
