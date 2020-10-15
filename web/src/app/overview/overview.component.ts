@@ -6,7 +6,7 @@ import { ChartDataSets, ChartOptions } from 'chart.js';
 import { Color, Label } from 'ng2-charts';
 
 const trendingRatioSort = (a, b) => {
-  return b.trending_ratio - a.trending_ratio;
+  return a.county > b.county ? 1 : -1
 };
 
 
