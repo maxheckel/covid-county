@@ -9,8 +9,8 @@ func Router(a *App) *mux.Router{
 	router := mux.NewRouter()
 	router.Handle("/api/overview", handlers.Overview{Manager: a.Data, Cache: a.Cache}).Methods("GET")
 	router.PathPrefix("/").Handler(handlers.SpaHandler{
-		StaticPath: "/server/web/dist/web",
-		IndexPath:  "/server/web/dist/web/index.html",
+		StaticPath: a.Config.SPARoot,
+		IndexPath:  a.Config.SPARoot+"/index.html",
 	}).Methods("GET")
 
 

@@ -13,6 +13,7 @@ type Config struct {
 	DBSSLMode  string `envconfig:"DB_SSLMODE" default:"disable"` // disable, require, verify-ca or verify-full
 	DBTimeout  int    `envconfig:"DB_TIMEOUT" default:"5"`       // seconds
 
+	SPARoot string `envconfig:"SPA_ROOT" default:"/server/web/dist/web"`
 }
 
 func Load() (*Config, error) {

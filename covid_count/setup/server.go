@@ -10,7 +10,7 @@ import (
 
 const (
 	// DefaultPort is the default application port
-	DefaultPort = 8000
+	DefaultPort = 80
 )
 
 var defaultOptions = []Option{
