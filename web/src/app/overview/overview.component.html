@@ -14,8 +14,8 @@
 <app-stats [up]="trendingUp()" [steady]="steady()" [down]="trendingDownwards()"></app-stats>
 <div class="form-group">
   <label for="county-search">Search</label>
-  <input type="text" class="form-control" id="county-search" (keyup)="search($event)" placeholder="County Name">
-  <a href="#" *ngIf="searchText.length > 4" (click)="searchText = ''">Clear search</a>
+  <input type="text" class="form-control" id="county-search" [value]="searchText" (keyup)="search($event)" placeholder="County Name">
+  <a href="#" *ngIf="searchText.length > 0" (click)="searchText = ''">Clear search</a>
 </div>
 <h2 id="up">Trending Upwards</h2>
 <div class="category rising">
@@ -41,6 +41,7 @@
 
   <b>Change Log:</b>
   <ul>
+    <li>[2020-10-16] Better searching, better calculation of trending for counties with small case counts.</li>
     <li>[2020-10-16] Added view by deaths/hospitalizations.  Made averages not round to nearest whole number.</li>
     <li>[2020-10-15] Initial Launch</li>
   </ul>

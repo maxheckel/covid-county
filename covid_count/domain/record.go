@@ -25,7 +25,7 @@ func (r Record) TableName() string {
 	return "imports.records"
 }
 
-func NewFromCSV(row []string) (Record, error) {
+func NewRecordFromCSV(row []string) (Record, error) {
 	layout := "1/2/2006"
 	onsetDate, err := time.Parse(layout, row[3])
 	var deathDate time.Time

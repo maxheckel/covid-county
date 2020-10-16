@@ -45,7 +45,8 @@ func (r *Record) CreateMultiple(records []domain.Record) error {
 }
 
 func (r *Record) ClearPreviousRecords() error {
-	return r.Database.Exec("TRUNCATE TABLE imports.records").Error
+	dummy := domain.Record{}
+	return r.Database.Exec("TRUNCATE TABLE "+dummy.TableName()).Error
 }
 
 func (r *Record) insertAsync(records []domain.Record, wg *sync.WaitGroup){

@@ -34,28 +34,19 @@ export class OverviewComponent implements OnInit {
 
   trendingUp(): County[] {
     return this.overviewData && this.overviewData.filter(datum => datum.trending_direction === "Upwards").filter((county: County) => {
-    if (this.searchText.length < 4){
-      return true;
-    }
-    return county.county.toLowerCase().startsWith(this.searchText.toLowerCase());
+    return county.county.toLowerCase().search(this.searchText.toLowerCase().trim()) != -1;
   }).sort(trendingRatioSort);
   }
 
   trendingDownwards(): County[] {
     return this.overviewData && this.overviewData.filter(datum => datum.trending_direction === "Downwards").filter((county: County) => {
-    if (this.searchText.length < 4){
-      return true;
-    }
-    return county.county.toLowerCase().startsWith(this.searchText.toLowerCase());
+    return county.county.toLowerCase().search(this.searchText.toLowerCase().trim()) != -1;
   }).sort(trendingRatioSort);
   }
 
   steady(): County[] {
     return this.overviewData && this.overviewData.filter(datum => datum.trending_direction === "Steady").filter((county: County) => {
-    if (this.searchText.length < 4){
-      return true;
-    }
-    return county.county.toLowerCase().startsWith(this.searchText.toLowerCase());
+    return county.county.toLowerCase().search(this.searchText.toLowerCase().trim()) != -1;
   }).sort(trendingRatioSort);
   }
 

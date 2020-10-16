@@ -25,7 +25,7 @@ func NewLoader(rm *repository.Manager) Loader{
 
 func (l *Loader) Load() error{
 	path := l.getLatestFile()
-	csvReader := l.getReaderForCSV(path)
+	csvReader := GetReaderForCSV(path)
 
 	lineCount := l.getLineCount(path)
 	err := l.Data.IsUpdating().SetIsUpdating(true)
@@ -65,20 +65,12 @@ func (l *Loader) csvToRecords(csvReader *csv.Reader, lineCount int) []domain.Rec
 		if currentLineCount == lineCount {
 			continue
 		}
-		record, err := domain.NewFromCSV(line)
+		record, err := domain.NewRecordFromCSV(line)
 		records = append(records, record)
 	}
 	return records
 }
 
-func (l *Loader) getReaderForCSV(path string) *csv.Reader {
-	reader, err := os.Open(path)
-	if err != nil {
-		panic(err)
-	}
-	csvReader := csv.NewReader(reader)
-	return csvReader
-}
 
 func (l *Loader) getLineCount(path string) int {
 	lineReader, _ := os.Open(path)
