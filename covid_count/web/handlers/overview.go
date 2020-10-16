@@ -46,7 +46,7 @@ func (o Overview) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	output, err := o.getSevenDayAverages(requestType)
 	fmt.Println("adding to cache")
-	o.Cache.Set(averagesKey+requestType, output, 1)
+	o.Cache.Set(averagesKey+requestType, output, 10)
 	if err != nil {
 		web.WriteJSONError(w, r, web.UnexpectedError(err.Error()))
 		return
