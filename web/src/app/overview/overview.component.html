@@ -5,7 +5,7 @@
     View By
   </label>
   <select (change)="setSearchType($event)" id="query-type" class="form-control form-control-lg">
-    <option value="">Cases</option>
+    <option value="cases">Cases</option>
     <option value="hospitalizations">Hospitalizations</option>
     <option value="deaths">Deaths</option>
   </select>
@@ -19,15 +19,15 @@
 </div>
 <h2 id="up">Trending Upwards</h2>
 <div class="category rising">
-  <app-county *ngFor="let county of trendingUp()" [county]="county" [trending]="'upwards'"></app-county>
+  <app-county [dataType]="queryType" *ngFor="let county of trendingUp()" [county]="county" [trending]="'upwards'"></app-county>
 </div>
 <h2 id="steady">Steady</h2>
 <div class="category steady">
-  <app-county *ngFor="let county of steady()" [county]="county" [trending]="'steady'"></app-county>
+  <app-county [dataType]="queryType" *ngFor="let county of steady()" [county]="county" [trending]="'steady'"></app-county>
 </div>
 <h2 id="down">Trending Downwards</h2>
 <div class="category downward">
-  <app-county *ngFor="let county of trendingDownwards()" [county]="county" [trending]="'downwards'"></app-county>
+  <app-county [dataType]="queryType" *ngFor="let county of trendingDownwards()" [county]="county" [trending]="'downwards'"></app-county>
 </div>
 <div class="disclaimer">
   <b>Notes:</b>

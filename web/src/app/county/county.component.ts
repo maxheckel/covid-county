@@ -11,6 +11,8 @@ import {Color, Label} from "ng2-charts";
 export class CountyComponent implements OnInit {
   @Input() trending: string;
   @Input() county: County
+  @Input() dataType: string;
+
   lineChartData: ChartDataSets[]
 
   lineChartLabels: Label[];
@@ -58,7 +60,7 @@ export class CountyComponent implements OnInit {
     this.lineChartData = [
       {
         data: Object.values(this.county.averages),
-        label: "7 day case average"
+        label: "7 day "+this.dataType+" average"
       }
     ]
     this.lineChartLabels = Object.keys(this.county.averages)
