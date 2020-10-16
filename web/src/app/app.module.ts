@@ -9,13 +9,18 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { CountyComponent } from './county/county.component';
 import {ChartsModule} from "ng2-charts";
 import { StatsComponent } from './stats/stats.component';
+import { CountyOverviewComponent } from './county-overview/county-overview.component';
+import { DeathsChartComponent } from './deaths-chart/deaths-chart.component';
+
 
 @NgModule({
   declarations: [
     AppComponent,
     OverviewComponent,
     CountyComponent,
-    StatsComponent
+    StatsComponent,
+    CountyOverviewComponent,
+    DeathsChartComponent
   ],
   imports: [
     BrowserModule,

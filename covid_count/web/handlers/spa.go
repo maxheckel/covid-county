@@ -20,6 +20,7 @@ type SpaHandler struct {
 // file located at the index path on the SPA handler will be served. This
 // is suitable behavior for serving an SPA (single page application).
 func (h SpaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
 	// get the absolute path to prevent directory traversal
 	path, err := filepath.Abs(r.URL.Path)
 	if err != nil {
@@ -34,7 +35,9 @@ func (h SpaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// check whether a file exists at the given path
 	_, err = os.Stat(path)
+
 	if os.IsNotExist(err) {
+
 		// file does not exist, serve index.html
 		http.ServeFile(w, r, filepath.Join(h.StaticPath, h.IndexPath))
 		return

@@ -43,5 +43,10 @@ func (dr *DeathRecord) insertAsync(records []domain.MonthlyCountyDeaths, wg *syn
 	for _, rec := range records {
 		dr.Database.LogMode(true).Create(&rec)
 	}
+}
 
+func (dr *DeathRecord) GetForCounty(county string) ([]*domain.MonthlyCountyDeaths, error) {
+	var res []*domain.MonthlyCountyDeaths
+	err := dr.Database.Where("county = ?", county).Find(&res).Error
+	return res, err
 }

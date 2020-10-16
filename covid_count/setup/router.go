@@ -12,10 +12,12 @@ func Router(a *App) *mux.Router{
 		Data:  a.Data,
 		Cache: a.Cache,
 	})
+
 	router.PathPrefix("/").Handler(handlers.SpaHandler{
 		StaticPath: a.Config.SPARoot,
-		IndexPath:  a.Config.SPARoot+"/index.html",
+		IndexPath:  "index.html",
 	}).Methods("GET")
+
 
 
 	return router

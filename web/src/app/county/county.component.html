@@ -1,4 +1,4 @@
-<div class="county">
+<a href="/county/{{county.county.toLowerCase()}}" class="county">
   <h4>{{county.county}}</h4>
   <div class="chart-wrapper">
     <canvas baseChart
@@ -11,4 +11,4 @@
             [plugins]="lineChartPlugins">
     </canvas>
   </div>
-</div>
+</a>
