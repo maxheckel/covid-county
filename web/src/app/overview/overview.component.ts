@@ -21,12 +21,12 @@ export class OverviewComponent implements OnInit {
 
   public searchText = "";
 
+  public queryType = "cases";
+
   constructor(private service: ApiService) {
   }
 
   ngOnInit(): void {
-
-
     this.service.getOverview().pipe(first()).subscribe(value => this.overviewData = value);
   }
 
@@ -60,9 +60,12 @@ export class OverviewComponent implements OnInit {
   }
 
   search($event){
-
     this.searchText = $event.target.value;
+  }
 
+  setSearchType($event){
+    this.queryType = $event.target.value;
+    this.service.getOverview(this.queryType).pipe(first()).subscribe(value => this.overviewData = value)
   }
 
 }

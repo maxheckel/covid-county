@@ -14,96 +14,6 @@ import (
 	"time"
 )
 
-var counties = [88]string{
-	"Ross",
-	"Summit",
-	"Brown",
-	"Warren",
-	"Clermont",
-	"Miami",
-	"Licking",
-	"Jefferson",
-	"Crawford",
-	"Stark",
-	"Monroe",
-	"Ashtabula",
-	"Jackson",
-	"Huron",
-	"Knox",
-	"Auglaize",
-	"Pike",
-	"Union",
-	"Sandusky",
-	"Vinton",
-	"Erie",
-	"Lorain",
-	"Franklin",
-	"Ottawa",
-	"Wyandot",
-	"Harrison",
-	"Pickaway",
-	"Wood",
-	"Fulton",
-	"Medina",
-	"Adams",
-	"Columbiana",
-	"Seneca",
-	"Washington",
-	"Wayne",
-	"Perry",
-	"Logan",
-	"Defiance",
-	"Greene",
-	"Van Wert",
-	"Allen",
-	"Henry",
-	"Hancock",
-	"Lawrence",
-	"Meigs",
-	"Ashland",
-	"Geauga",
-	"Lake",
-	"Darke",
-	"Montgomery",
-	"Tuscarawas",
-	"Butler",
-	"Hardin",
-	"Cuyahoga",
-	"Delaware",
-	"Morgan",
-	"Noble",
-	"Highland",
-	"Putnam",
-	"Hocking",
-	"Marion",
-	"Richland",
-	"Shelby",
-	"Mahoning",
-	"Athens",
-	"Muskingum",
-	"Belmont",
-	"Clark",
-	"Champaign",
-	"Holmes",
-	"Carroll",
-	"Coshocton",
-	"Preble",
-	"Morrow",
-	"Gallia",
-	"Fairfield",
-	"Madison",
-	"Fayette",
-	"Williams",
-	"Trumbull",
-	"Clinton",
-	"Portage",
-	"Mercer",
-	"Hamilton",
-	"Paulding",
-	"Guernsey",
-	"Lucas",
-	"Scioto",
-}
 
 const isUpdatingCacheKey = "writing"
 const daysBack = 21
@@ -112,8 +22,8 @@ const interval = 7
 
 
 type Overview struct {
-	Manager *repository.Manager
-	Cache   *service.Cache
+	Data  *repository.Manager
+	Cache *service.Cache
 }
 
 func (o Overview) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -123,14 +33,20 @@ func (o Overview) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if output, found := o.Cache.Get(averagesKey); found {
+	var requestType string = ""
+	if val, ok := r.URL.Query()["type"]; ok{
+		requestType = val[0]
+	}
+
+	if output, found := o.Cache.Get(averagesKey+requestType); found {
 		fmt.Println("exists in cache")
 		web.WriteJSON(w, 200, output)
 		return
 	}
-	output, err := o.getSevenDayAverages()
+
+	output, err := o.getSevenDayAverages(requestType)
 	fmt.Println("adding to cache")
-	o.Cache.Set(averagesKey, output, 1)
+	o.Cache.Set(averagesKey+requestType, output, 1)
 	if err != nil {
 		web.WriteJSONError(w, r, web.UnexpectedError(err.Error()))
 		return
@@ -140,21 +56,32 @@ func (o Overview) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (o Overview) getSevenDayAverages() ([]responses.CountyWeekAverage, error){
-	caseResponse, err := o.Manager.Cases().GetAllCasesForDays(daysBack)
+func (o Overview) getSevenDayAverages(requestType string) ([]responses.CountyWeekAverage, error){
+
+
+	var caseResponse []*domain.DailyInstances
+	var err error
+	if requestType == "deaths" {
+		caseResponse, err = o.Data.Cases().GetAllDeathsForDays(daysBack)
+	} else if requestType == "hospitalizations"{
+		caseResponse, err = o.Data.Cases().GetAllHospitalizationsForDays(daysBack)
+	} else{
+		caseResponse, err = o.Data.Cases().GetAllCasesForDays(daysBack)
+	}
+
 	if err != nil {
 		return nil, err
 	}
 	caseResponse = populateZeroDays(caseResponse)
 
 	var output []responses.CountyWeekAverage
-	for _, county := range counties {
+	for _, county := range repository.Counties {
 
 		res := responses.CountyWeekAverage{
 			County:   county,
 			Averages: map[string]float64{},
 		}
-		countyCases := []*domain.DailyCases{}
+		countyCases := []*domain.DailyInstances{}
 		for _, cases := range caseResponse {
 			if cases.County == county {
 				countyCases = append(countyCases, cases)
@@ -170,7 +97,8 @@ func (o Overview) getSevenDayAverages() ([]responses.CountyWeekAverage, error){
 			for j := 0; j < interval; j++ {
 				sum += countyCases[i+j].Count
 			}
-			res.Averages[countyCases[i].Date.Format("2006-01-02")] = math.Ceil(float64(sum/interval))
+
+			res.Averages[countyCases[i].Date.Format("2006-01-02")] = math.Round((float64(sum)/float64(interval))*100)/100
 		}
 		res.TrendingDirection, res.TrendingRatio = service.TrendingDirection(res.Averages, county)
 		output = append(output, res)
@@ -180,12 +108,12 @@ func (o Overview) getSevenDayAverages() ([]responses.CountyWeekAverage, error){
 
 
 
-func populateZeroDays(caseResponse []*domain.DailyCases) []*domain.DailyCases {
-	var buckets = make(map[string][]*domain.DailyCases)
+func populateZeroDays(caseResponse []*domain.DailyInstances) []*domain.DailyInstances {
+	var buckets = make(map[string][]*domain.DailyInstances)
 	dateIterator := time.Now().AddDate(0,0,(daysBack+6)*-1)
 	for i := 0; i < daysBack; i++ {
 		dateString := DateToString(dateIterator)
-		buckets[dateString] = []*domain.DailyCases{}
+		buckets[dateString] = []*domain.DailyInstances{}
 		for _, cases := range caseResponse {
 			if DateToString(cases.Date) == dateString {
 				buckets[dateString] = append(buckets[dateString], cases)
@@ -194,28 +122,28 @@ func populateZeroDays(caseResponse []*domain.DailyCases) []*domain.DailyCases {
 		dateIterator = dateIterator.AddDate(0,0,1)
 	}
 	populateEmptyDates(buckets)
-	var resp []*domain.DailyCases
+	var resp []*domain.DailyInstances
 	for _, day := range buckets{
 		resp = append(resp, day...)
 	}
 	return resp
 }
 
-func populateEmptyDates(buckets map[string][]*domain.DailyCases) {
+func populateEmptyDates(buckets map[string][]*domain.DailyInstances) {
 	for date, cases := range buckets {
 		if len(cases) == 0 {
 			continue
 		}
-		if len(cases) == len(counties) {
+		if len(cases) == len(repository.Counties) {
 			continue
 		}
 		var dailyCounties []string
 		for _, day := range cases {
 			dailyCounties = append(dailyCounties, day.County)
 		}
-		missingCounties := countyDifference(counties, dailyCounties)
+		missingCounties := countyDifference(repository.Counties, dailyCounties)
 		for _, missingCounty := range missingCounties {
-			buckets[date] = append(buckets[date], &domain.DailyCases{
+			buckets[date] = append(buckets[date], &domain.DailyInstances{
 				County: missingCounty,
 				Date:   cases[0].Date,
 				Count:  0,
@@ -250,7 +178,7 @@ func (o Overview) isUpdating() (bool, error) {
 	var err error
 	res, found := o.Cache.Get(isUpdatingCacheKey)
 	if !found {
-		isUpdating, err = o.Manager.IsUpdating().IsUpdating()
+		isUpdating, err = o.Data.IsUpdating().IsUpdating()
 		o.Cache.Set(isUpdatingCacheKey, isUpdating, 60)
 	}
 	if res, set := res.(bool); set {

@@ -1,7 +1,9 @@
 package service
 
 import (
+	"fmt"
 	"github.com/patrickmn/go-cache"
+	"time"
 )
 
 type Cache struct {
@@ -10,7 +12,8 @@ type Cache struct {
 
 
 func (c *Cache) Set(key string, val interface{}, minutes float64){
-	c.Driver.Set(key, val, cache.DefaultExpiration)
+	duration, _ := time.ParseDuration(fmt.Sprintf("%gm", minutes))
+	c.Driver.Set(key, val, duration)
 }
 
 func (c *Cache) Get(key string) (interface{}, bool){

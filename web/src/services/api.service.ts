@@ -9,7 +9,7 @@ import {Injectable} from "@angular/core";
 export class ApiService{
   constructor(private client: HttpClient) {}
 
-  getOverview():Observable<County[]>{
-    return this.client.get<County[]>("/api/overview")
+  getOverview(queryType?:string):Observable<County[]>{
+    return this.client.get<County[]>("/api/overview?type="+queryType)
   }
 }
