@@ -1,7 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {County} from "../../models/county";
-import {ChartDataSets} from "chart.js";
-import {Color, Label} from "ng2-charts";
+import {County} from '../../models/county';
+import {ChartDataSets} from 'chart.js';
+import {Color, Label} from 'ng2-charts';
 
 @Component({
   selector: 'app-county',
@@ -10,10 +10,10 @@ import {Color, Label} from "ng2-charts";
 })
 export class CountyComponent implements OnInit {
   @Input() trending: string;
-  @Input() county: County
+  @Input() county: County;
   @Input() dataType: string;
 
-  lineChartData: ChartDataSets[]
+  lineChartData: ChartDataSets[];
 
   lineChartLabels: Label[];
 
@@ -38,7 +38,7 @@ export class CountyComponent implements OnInit {
 
   }
 
-  trendingToColor():string{
+  trendingToColor(): string{
     switch (this.trending){
       case 'downwards':
         return 'rgba(182, 211, 105, 0.28)';
@@ -56,14 +56,14 @@ export class CountyComponent implements OnInit {
         borderColor: 'black',
         backgroundColor: this.trendingToColor(),
       },
-    ]
+    ];
     this.lineChartData = [
       {
         data: Object.values(this.county.averages),
-        label: "7 day "+this.dataType+" average"
+        label: '7 day ' + this.dataType + ' average'
       }
-    ]
-    this.lineChartLabels = Object.keys(this.county.averages)
+    ];
+    this.lineChartLabels = Object.keys(this.county.averages);
   }
 
 }

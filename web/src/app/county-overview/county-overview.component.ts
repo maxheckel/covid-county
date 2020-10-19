@@ -1,10 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
-import {CountyOverview} from "../../models/county-overview";
-import {ApiService} from "../../services/api.service";
-import {first} from "rxjs/operators";
-import {ChartDataSets, ChartType} from "chart.js";
-import {Color, Label} from "ng2-charts";
+import {ActivatedRoute} from '@angular/router';
+import {CountyOverview} from '../../models/county-overview';
+import {ApiService} from '../../services/api.service';
 
 @Component({
   selector: 'app-county-overview',
@@ -12,12 +9,12 @@ import {Color, Label} from "ng2-charts";
   styleUrls: ['./county-overview.component.scss']
 })
 export class CountyOverviewComponent implements OnInit {
-  public county: CountyOverview
+  public county: CountyOverview;
   public name: string;
   constructor(private route: ActivatedRoute, private service: ApiService) {
-    this.name = route.snapshot.paramMap.get("name");
+    this.name = route.snapshot.paramMap.get('name');
     this.service.getCounty(this.name).subscribe(val => {
-      this.county = val
+      this.county = val;
     });
   }
 

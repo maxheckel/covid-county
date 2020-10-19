@@ -1,0 +1,14 @@
+a{
+  font-size: 22px;
+}
+
+.data{
+  position: relative;
+  margin: 0px auto;
+  width: 80%;
+
+  @media screen and (max-width: 750px){
+    width: 100%;
+    padding: 10px;
+  }
+}

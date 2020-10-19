@@ -11,6 +11,8 @@ import {ChartsModule} from "ng2-charts";
 import { StatsComponent } from './stats/stats.component';
 import { CountyOverviewComponent } from './county-overview/county-overview.component';
 import { DeathsChartComponent } from './deaths-chart/deaths-chart.component';
+import { DailyCountsComponent } from './daily-counts/daily-counts.component';
+
 
 
 @NgModule({
@@ -20,7 +22,8 @@ import { DeathsChartComponent } from './deaths-chart/deaths-chart.component';
     CountyComponent,
     StatsComponent,
     CountyOverviewComponent,
-    DeathsChartComponent
+    DeathsChartComponent,
+    DailyCountsComponent
   ],
   imports: [
     BrowserModule,

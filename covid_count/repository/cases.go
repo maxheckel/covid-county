@@ -52,3 +52,48 @@ GROUP BY records.county, records.admission_date`).Scan(&res).Error
 
 	return res, err
 }
+
+
+func (c *Cases) GetCountyCasesForDays(numDays int, county string) ([]*domain.DailyInstances, error) {
+	var res []*domain.DailyInstances
+	err := c.Database.Raw(`SELECT
+  sum(case_count) as count,
+  records.onset_date as date, records.county,
+  'Case' as type
+FROM imports.records
+WHERE records.onset_date > now() - INTERVAL '`+strconv.Itoa(numDays)+` DAYS'
+AND lower(county) = lower(?)
+GROUP BY records.county, records.onset_date`, county).Scan(&res).Error
+
+	return res, err
+}
+
+
+func (c *Cases) GetCountyDeathsForDays(numDays int, county string) ([]*domain.DailyInstances, error) {
+	var res []*domain.DailyInstances
+	err := c.Database.Raw(`SELECT
+  sum(death_count) as count,
+  records.death_date as date, records.county,
+  'Death' as type
+FROM imports.records
+WHERE records.death_date > now() - INTERVAL '`+strconv.Itoa(numDays)+` DAYS'
+AND lower(county) = lower(?)
+GROUP BY records.county, records.death_date`, county).Scan(&res).Error
+
+	return res, err
+}
+
+
+func (c *Cases) GetCountyHospitalizationsForDays(numDays int, county string) ([]*domain.DailyInstances, error) {
+	var res []*domain.DailyInstances
+	err := c.Database.Raw(`SELECT
+  sum(hospitalized_count) as count,
+  records.admission_date as date, records.county,
+  'Hospitalization' as type
+FROM imports.records
+WHERE records.admission_date > now() - INTERVAL '`+strconv.Itoa(numDays)+` DAYS'
+AND lower(county) = lower(?)
+GROUP BY records.county, records.admission_date`, county).Scan(&res).Error
+
+	return res, err
+}

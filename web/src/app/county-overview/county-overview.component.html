@@ -1,6 +1,9 @@
-<a href="/">Back</a>
-<div *ngIf="county.deaths">
+<a class="btn btn-primary" href="/">Back</a>
+<div *ngIf="county.deaths" class="data">
   <h1>{{name.charAt(0).toUpperCase() + name.slice(1)}} County</h1>
   <app-deaths-chart [county]="county"></app-deaths-chart>
+  <app-daily-counts [instances]="county.daily_cases"></app-daily-counts>
+  <app-daily-counts [instances]="county.daily_hospitalizations"></app-daily-counts>
+  <app-daily-counts [instances]="county.daily_deaths"></app-daily-counts>
 </div>
 
