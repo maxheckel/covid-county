@@ -3,6 +3,7 @@ package service
 import (
 	"archive/zip"
 	"fmt"
+	"github.com/maxheckel/covid_county/covid_count/domain"
 	"github.com/maxheckel/covid_county/covid_count/repository"
 	"io"
 	"net/http"
@@ -20,37 +21,44 @@ func NewDeathLoader(data *repository.Manager) *DeathLoader {
 }
 
 func (dl *DeathLoader) Load() error{
-	path := "./data/imports/" + currentDate() + "deaths.zip"
-	err := dl.downloadDeathFile(path)
+	err := dl.Data.DeathRecords().ClearPreviousMonthlyCountyDeaths()
 	if err != nil {
 		return err
 	}
-	//err = dl.Data.DeathRecords().ClearPreviousMonthlyCountyDeathss()
-	//if err != nil {
-	//	return err
-	//}
-	//var records []domain.MonthlyCountyDeaths
-	//for currentYear := 2018; currentYear <= 2020; currentYear++ {
-	//	csvReader := GetReaderForCSV("./data/imports/"+strconv.Itoa(currentYear)+"deaths.csv")
-	//	for {
-	//		line, err := csvReader.Read()
-	//		if err == io.EOF {
-	//			break
-	//		}
-	//
-	//		if err != nil {
-	//			return err
-	//		}
-	//
-	//		record, err := domain.NewMonthlyCountyDeathsFromCSV(line, currentYear)
-	//		records = append(records, record...)
-	//	}
-	//}
-	//
-	//err = dl.Data.DeathRecords().CreateMultiple(records)
-	//if err != nil{
-	//	return err
-	//}
+	path := "./data/imports/" + currentDate() + "deaths.zip"
+	files, err := dl.downloadDeathFiles(path)
+	if err != nil {
+		return err
+	}
+	var records []domain.MonthlyCountyDeaths
+	for _, file := range files {
+		csvReader := GetReaderForCSV(file)
+		for {
+			line, err := csvReader.Read()
+
+			if err == io.EOF {
+				break
+			}
+			// Skip header values and dummy data
+			if line[0] == "DeathMonthMonthName" || line[0] == "Total" || line[0] == "Unknown" || line[1] == "NonOH"{
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			year := 0
+			if strings.Contains(file, "2020") {
+				year = 2020
+			}
+			record, err := domain.NewMonthlyCountyDeathsFromCSV(line, year)
+			records = append(records, record)
+		}
+	}
+
+	err = dl.Data.DeathRecords().CreateMultiple(records)
+	if err != nil{
+		return err
+	}
 
 	return nil
 }
@@ -59,32 +67,69 @@ func (dl *DeathLoader) Load() error{
 
 // downloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
-func (dl *DeathLoader) downloadDeathFile(filepath string) error {
+func (dl *DeathLoader) downloadDeathFiles(filepath string) ([]string, error) {
 
-	client := &http.Client{
-
-	}
-	req, _ := http.NewRequest("GET", "http://publicapps.odh.ohio.gov/EDW/Reports/GetDelimitedReportData", nil)
-	req.Header.Add("Cookie", "ASP.NET_SessionId=japbgqfpw1vf3i0l35osx1tg; ai_user=j9yht|2020-10-17T18:38:57.482Z; ai_session=KKnNB|1602959939593|1602960176385.54")
-	resp, err := client.Do(req)
-	// Get the data
+	client := &http.Client{}
+	// Download 2020 data
+	reqBody := `{"Rows":[{"UniqueName":"[Death County]","Domain":"Demographics","ReportFieldSize":1,"OutputOrder":0,"VariableOfInterest":false,"LoadToDesigner":true,"Location":"ROW","SubReportHeader":"County of Residence","SubReportHeaderHeight":0.1,"SubReportFooter":"","SubReportFooterHeight":1,"IncludeSubtotals":false,"FilteredMembers":[]}],"Columns":[{"UniqueName":"[Death Month]","Domain":"Time/Location","ReportFieldSize":1,"OutputOrder":0,"VariableOfInterest":false,"LoadToDesigner":false,"Location":"ROW","SubReportHeader":"Month of Death","SubReportHeaderHeight":0.1,"SubReportFooter":"","SubReportFooterHeight":1,"IncludeSubtotals":false,"FilteredMembers":[]}],"Slicers":[{"CubeDimensionID":18053,"UniqueName":"[Death Year]","Promoted":false,"FilteredMembers":["2020 **"]}],"DatasetCode":"Mortality","ReportID":1813,"IncludeRowTotals":true,"IncludeColumnTotals":true,"IncludeGrandTotal":false,"IncludeTotalsHeader":false,"PercentCalcMethod":"rowtotal","PercentDimension":"SELECT","Measures":[{"Caption":"Deaths","Description":"","Name":"Deaths","UniqueName":"[Measures].[Deaths]","BuilderName":"Death Count","CubeName":"[Measures].[Deaths]","CubeMeasureID":0,"BuilderToolTip":"Death Count","IsCount":true,"IncludeValue":true,"IncludeRunningCount":false,"IncludePercent":false,"IncludeRunningPercent":false,"PercentDimension":"rowtotal","OutputFormat":"N0","QueryAttributes":null,"OutputColumns":null,"LoadToDesigner":true,"DesignerOrder":"1","Location":null,"ExcludeCountInTotalGroup":false,"ExcludeRunningCountInTotalGroup":false,"ExcludePercentInTotalGroup":false,"ExcludeRunningPercentInTotalGroup":false,"MeasureHeaderText":null,"MeasureFooterText":null}],"IncludeTotalHeaderBlock":false,"SummarizeInSubreports":true}`
+	resp, err := dl.getCookieAndRequestFiles(reqBody, client)
 	if err != nil {
-		return err
+		return []string{}, err
 	}
+	deaths2020Files, err := dl.DownloadFiles(filepath, resp, "2020deaths")
+	if err != nil {
+		return []string{}, err
+	}
+
+	_, err = os.Open("data/imports/otherDeaths/DataFile1.csv")
+	if err == nil || !os.IsNotExist(err) {
+		return append(deaths2020Files, "./data/imports/otherDeaths/DataFile1.csv"), nil
+	}
+	reqBody = `{"Rows":[{"UniqueName":"[Death County]","Domain":"Demographics","ReportFieldSize":1,"OutputOrder":0,"VariableOfInterest":false,"LoadToDesigner":true,"Location":"ROW","SubReportHeader":"County of Residence","SubReportHeaderHeight":0.1,"SubReportFooter":"","SubReportFooterHeight":1,"IncludeSubtotals":false,"FilteredMembers":[]}],"Columns":[{"UniqueName":"[Death Month]","Domain":"Time/Location","ReportFieldSize":1,"OutputOrder":0,"VariableOfInterest":false,"LoadToDesigner":false,"Location":"ROW","SubReportHeader":"Month of Death","SubReportHeaderHeight":0.1,"SubReportFooter":"","SubReportFooterHeight":1,"IncludeSubtotals":false,"FilteredMembers":[]}],"Slicers":[{"CubeDimensionID":18053,"UniqueName":"[Death Year]","Promoted":false,"FilteredMembers":["2015","2016","2017","2018","2019 **"]}],"DatasetCode":"Mortality","ReportID":1813,"IncludeRowTotals":true,"IncludeColumnTotals":true,"IncludeGrandTotal":false,"IncludeTotalsHeader":false,"PercentCalcMethod":"rowtotal","PercentDimension":"SELECT","Measures":[{"Caption":"Deaths","Description":"","Name":"Deaths","UniqueName":"[Measures].[Deaths]","BuilderName":"Death Count","CubeName":"[Measures].[Deaths]","CubeMeasureID":0,"BuilderToolTip":"Death Count","IsCount":true,"IncludeValue":true,"IncludeRunningCount":false,"IncludePercent":false,"IncludeRunningPercent":false,"PercentDimension":"rowtotal","OutputFormat":"N0","QueryAttributes":null,"OutputColumns":null,"LoadToDesigner":true,"DesignerOrder":"1","Location":null,"ExcludeCountInTotalGroup":false,"ExcludeRunningCountInTotalGroup":false,"ExcludePercentInTotalGroup":false,"ExcludeRunningPercentInTotalGroup":false,"MeasureHeaderText":null,"MeasureFooterText":null}],"IncludeTotalHeaderBlock":false,"SummarizeInSubreports":true}`
+	resp, err = dl.getCookieAndRequestFiles(reqBody, client)
+	if err != nil {
+		return []string{}, err
+	}
+	otherDeathFiles, err := dl.DownloadFiles(filepath, resp, "otherDeaths")
+	if err != nil {
+		return []string{}, err
+	}
+
+	return append(deaths2020Files, otherDeathFiles...), nil
+}
+
+func (dl *DeathLoader) getCookieAndRequestFiles(reqBody string, client *http.Client) (*http.Response, error) {
+	cookieReq, _ := http.NewRequest("POST", "http://publicapps.odh.ohio.gov/EDW/Reports/RequestReportData", strings.NewReader(reqBody))
+	cookieReq.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	cookieResp, err := client.Do(cookieReq)
+	if err != nil {
+		return nil, err
+	}
+
+	sessionCookie := cookieResp.Header.Get("Session")
+	sessionCookie = strings.Trim(sessionCookie, "[]")
+	sessionCookieParts := strings.Split(sessionCookie, ":")
+	fmt.Println(sessionCookieParts)
+	req, _ := http.NewRequest("GET", "http://publicapps.odh.ohio.gov/EDW/Reports/GetDelimitedReportData", nil)
+	req.Header.Add("Cookie", "ASP.NET_SessionId="+sessionCookieParts[2]+";")
+	resp, err := client.Do(req)
+	return resp, err
+}
+
+func (dl *DeathLoader) DownloadFiles(filepath string, resp *http.Response, extractFolder string) ([]string, error) {
 	defer resp.Body.Close()
 
 	// Create the file
 	out, err := os.Create(filepath)
 	if err != nil {
-		return err
+		return []string{}, err
 	}
 	defer out.Close()
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
-	files, err := Unzip(filepath, "./data/imports/")
-	fmt.Println(files)
-	return err
+
+	return Unzip(filepath, "./data/imports/"+extractFolder+"/")
 }
 
 // Unzip will decompress a zip archive, moving all files and folders
@@ -142,5 +187,5 @@ func Unzip(src string, dest string) ([]string, error) {
 			return filenames, err
 		}
 	}
-	return filenames, nil
+	return filenames[:len(filenames)-1], nil
 }

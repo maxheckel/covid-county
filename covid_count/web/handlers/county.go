@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/gorilla/mux"
 	"github.com/maxheckel/covid_county/covid_count/domain"
 	"github.com/maxheckel/covid_county/covid_count/repository"
 	"github.com/maxheckel/covid_county/covid_count/service"
@@ -16,7 +17,9 @@ type County struct{
 }
 
 func (c County) ServeHTTP(w http.ResponseWriter, r *http.Request){
-	res, err := c.Data.DeathRecords().GetForCounty("Franklin")
+	vars := mux.Vars(r)
+
+	res, err := c.Data.DeathRecords().GetForCounty(vars["county"])
 	if err != nil {
 		web.WriteJSONError(w, r, err)
 	}

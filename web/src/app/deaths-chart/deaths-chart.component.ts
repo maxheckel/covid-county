@@ -41,7 +41,7 @@ export class DeathsChartComponent implements OnInit {
   ngOnInit(): void {
     Object.keys(this.county.deaths).forEach(key => {
       this.barChartData.push({
-        label: key,
+        label: key == "2020" ? key : "Last 5 years avg",
         data: this.county.deaths[key].map(death => death.count)
       })
     })

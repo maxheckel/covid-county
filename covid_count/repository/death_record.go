@@ -33,7 +33,7 @@ func (dr *DeathRecord) CreateMultiple(records []domain.MonthlyCountyDeaths) erro
 	return nil
 }
 
-func (dr *DeathRecord) ClearPreviousMonthlyCountyDeathss() error {
+func (dr *DeathRecord) ClearPreviousMonthlyCountyDeaths() error {
 	dummy := domain.MonthlyCountyDeaths{}
 	return dr.Database.Exec("TRUNCATE TABLE "+dummy.TableName()).Error
 }
@@ -47,6 +47,6 @@ func (dr *DeathRecord) insertAsync(records []domain.MonthlyCountyDeaths, wg *syn
 
 func (dr *DeathRecord) GetForCounty(county string) ([]*domain.MonthlyCountyDeaths, error) {
 	var res []*domain.MonthlyCountyDeaths
-	err := dr.Database.Where("county = ?", county).Find(&res).Error
+	err := dr.Database.Where("lower(county) = lower(?)", county).Find(&res).Error
 	return res, err
 }
