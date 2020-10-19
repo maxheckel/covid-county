@@ -1,0 +1,25 @@
+.stats{
+  display: grid;
+  grid-template-columns: repeat(4, 25%);
+  .stat{
+    text-align: center;
+    font-size: 14px;
+    .stat-container{
+      display: inline-block;
+      width: 190px;
+      background-color: #f2f2f2;
+      padding: 20px 10px;
+      border-radius: 10px;
+      margin: 35px;
+    }
+
+    .statNum{
+      font-size: 24px;
+      display: block;
+    }
+  }
+  @media screen and (max-width: 1000px) {
+    display: grid;
+    grid-template-columns: repeat(2, 50%);
+  }
+}

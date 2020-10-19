@@ -9,6 +9,7 @@ import (
 	"github.com/maxheckel/covid_county/covid_count/web/responses"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type County struct{
@@ -30,7 +31,11 @@ func (c County) ServeHTTP(w http.ResponseWriter, r *http.Request){
 		output.Deaths[record.Year] = append(output.Deaths[record.Year], record)
 	}
 
-	numDays := 200
+	t1, _ := time.Parse("2006-01-02", "2020-02-01")
+
+
+	t2 := time.Now()
+	numDays := int(t2.Sub(t1).Hours() / 24)
 	output.DailyCases, err = c.Data.Cases().GetCountyCasesForDays(numDays, vars["county"])
 	if err != nil {
 		web.WriteJSONError(w, r, err)

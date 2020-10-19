@@ -12,6 +12,7 @@ import { StatsComponent } from './stats/stats.component';
 import { CountyOverviewComponent } from './county-overview/county-overview.component';
 import { DeathsChartComponent } from './deaths-chart/deaths-chart.component';
 import { DailyCountsComponent } from './daily-counts/daily-counts.component';
+import { CountyStatsComponent } from './county-stats/county-stats.component';
 
 
 
@@ -23,7 +24,8 @@ import { DailyCountsComponent } from './daily-counts/daily-counts.component';
     StatsComponent,
     CountyOverviewComponent,
     DeathsChartComponent,
-    DailyCountsComponent
+    DailyCountsComponent,
+    CountyStatsComponent
   ],
   imports: [
     BrowserModule,
