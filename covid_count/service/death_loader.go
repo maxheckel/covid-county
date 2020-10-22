@@ -21,12 +21,14 @@ func NewDeathLoader(data *repository.Manager) *DeathLoader {
 }
 
 func (dl *DeathLoader) Load() error{
-	err := dl.Data.DeathRecords().ClearPreviousMonthlyCountyDeaths()
+
+
+	path := "./data/imports/" + currentDate() + "deaths.zip"
+	files, err := dl.downloadDeathFiles(path)
 	if err != nil {
 		return err
 	}
-	path := "./data/imports/" + currentDate() + "deaths.zip"
-	files, err := dl.downloadDeathFiles(path)
+	err = dl.Data.DeathRecords().ClearPreviousMonthlyCountyDeaths()
 	if err != nil {
 		return err
 	}
