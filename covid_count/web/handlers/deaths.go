@@ -18,6 +18,12 @@ type CountiesDeaths struct {
 func (c CountiesDeaths) ServeHTTP(w http.ResponseWriter, r *http.Request){
 	countiesString := r.URL.Query()["counties"][0]
 	counties := strings.Split(countiesString, ",")
+	cacheKey := countiesString + "_deaths"
+	cachedRes, found := c.Cache.Get(cacheKey)
+	if found {
+		web.WriteJSON(w, 200, cachedRes)
+		return
+	}
 	for k, v := range counties{
 		counties[k] = strings.ToLower(v)
 	}
@@ -49,7 +55,7 @@ func (c CountiesDeaths) ServeHTTP(w http.ResponseWriter, r *http.Request){
 			})
 		}
 	}
-
+	c.Cache.Set(cacheKey, res, 10)
 	web.WriteJSON(w, 200, res)
 
 }
