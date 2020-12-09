@@ -100,7 +100,7 @@ func lineCounter(r io.Reader) (int, error) {
 
 
 func (l *Loader) getLatestFile() string {
-	summaryURL := "https://coronavirus.ohio.gov/static/COVIDSummaryData.csv"
+	summaryURL := "https://coronavirus.ohio.gov/static/dashboards/COVIDSummaryData.csv"
 	path := "./data/imports/" + currentDate() + ".csv"
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
