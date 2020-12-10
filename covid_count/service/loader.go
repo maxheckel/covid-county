@@ -13,17 +13,25 @@ import (
 	"time"
 )
 
-type Loader struct {
-	Data *repository.Manager
+type Loader interface{
+	Load() error
+	csvToRecords(csvReader *csv.Reader, lineCount int) []domain.Record
+	getLineCount(path string) int
+	getLatestFile() string
+	downloadFile(filepath string, url string) error
 }
 
-func NewLoader(rm *repository.Manager) Loader{
-	return Loader{
+type loader struct {
+	Data repository.Manager
+}
+
+func NewLoader(rm repository.Manager) Loader{
+	return &loader{
 		Data: rm,
 	}
 }
 
-func (l *Loader) Load() error{
+func (l *loader) Load() error{
 	path := l.getLatestFile()
 	csvReader := GetReaderForCSV(path)
 
@@ -45,7 +53,7 @@ func (l *Loader) Load() error{
 }
 
 
-func (l *Loader) csvToRecords(csvReader *csv.Reader, lineCount int) []domain.Record {
+func (l *loader) csvToRecords(csvReader *csv.Reader, lineCount int) []domain.Record {
 	var records []domain.Record
 	currentLineCount := 0
 	for {
@@ -72,7 +80,7 @@ func (l *Loader) csvToRecords(csvReader *csv.Reader, lineCount int) []domain.Rec
 }
 
 
-func (l *Loader) getLineCount(path string) int {
+func (l *loader) getLineCount(path string) int {
 	lineReader, _ := os.Open(path)
 	lineCount, _ := lineCounter(lineReader)
 	return lineCount
@@ -99,7 +107,7 @@ func lineCounter(r io.Reader) (int, error) {
 
 
 
-func (l *Loader) getLatestFile() string {
+func (l *loader) getLatestFile() string {
 	summaryURL := "https://coronavirus.ohio.gov/static/dashboards/COVIDSummaryData.csv"
 	path := "./data/imports/" + currentDate() + ".csv"
 	_, err := os.Stat(path)
@@ -116,7 +124,7 @@ func currentDate() string {
 
 // downloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
-func (l *Loader) downloadFile(filepath string, url string) error {
+func (l *loader) downloadFile(filepath string, url string) error {
 
 	// Get the data
 	resp, err := http.Get(url)

@@ -8,12 +8,22 @@ import (
 	"time"
 )
 
-type Record struct {
+type Record interface {
+	MaxDate(col string) (*time.Time, error)
+	CreateMultiple(records []domain.Record) error
+	ClearPreviousRecords() error
+	insertAsync(records []domain.Record, wg *sync.WaitGroup)
+}
+
+type record struct {
 	Database *gorm.DB
 }
 
+func NewRecordRepository(db *gorm.DB) Record {
+	return &record{Database: db}
+}
 
-func (r *Record) MaxDate(col string) (*time.Time, error) {
+func (r *record) MaxDate(col string) (*time.Time, error) {
 	var res string
 	r.Database.LogMode(true).Select("MAX("+col+")").Table("imports.records").Limit(1).Row().Scan(&res)
 	if res == "" {
@@ -23,7 +33,7 @@ func (r *Record) MaxDate(col string) (*time.Time, error) {
 	return &timeRes, err
 }
 
-func (r *Record) CreateMultiple(records []domain.Record) error {
+func (r *record) CreateMultiple(records []domain.Record) error {
 	start := time.Now()
 	batches := 10
 	batchSize := len(records) / batches
@@ -44,12 +54,12 @@ func (r *Record) CreateMultiple(records []domain.Record) error {
 	return nil
 }
 
-func (r *Record) ClearPreviousRecords() error {
+func (r *record) ClearPreviousRecords() error {
 	dummy := domain.Record{}
 	return r.Database.Exec("TRUNCATE TABLE "+dummy.TableName()).Error
 }
 
-func (r *Record) insertAsync(records []domain.Record, wg *sync.WaitGroup){
+func (r *record) insertAsync(records []domain.Record, wg *sync.WaitGroup){
 	defer wg.Done()
 	for _, rec := range records {
 		r.Database.LogMode(true).Create(&rec)

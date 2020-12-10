@@ -5,7 +5,6 @@ import (
 	"github.com/maxheckel/covid_county/covid_count/domain"
 	"github.com/maxheckel/covid_county/covid_count/repository"
 	"github.com/maxheckel/covid_county/covid_count/service"
-	"github.com/maxheckel/covid_county/covid_count/web"
 	"github.com/maxheckel/covid_county/covid_count/web/responses"
 	"math"
 	"net/http"
@@ -22,14 +21,14 @@ const interval = 7
 
 
 type Overview struct {
-	Data  *repository.Manager
-	Cache *service.Cache
+	Data  repository.Manager
+	Cache service.Cache
 }
 
 func (o Overview) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	isUpdating, err := o.isUpdating()
 	if isUpdating {
-		web.WriteJSON(w, 503, responses.IsUpdating{IsUpdating: true})
+		responses.WriteJSON(w, 503, responses.IsUpdating{IsUpdating: true})
 		return
 	}
 
@@ -40,7 +39,7 @@ func (o Overview) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if output, found := o.Cache.Get(averagesKey+requestType); found {
 		fmt.Println("exists in cache")
-		web.WriteJSON(w, 200, output)
+		responses.WriteJSON(w, 200, output)
 		return
 	}
 
@@ -48,11 +47,11 @@ func (o Overview) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("adding to cache")
 	o.Cache.Set(averagesKey+requestType, output, 10)
 	if err != nil {
-		web.WriteJSONError(w, r, web.UnexpectedError(err.Error()))
+		responses.WriteJSONError(w, r, responses.UnexpectedError(err.Error()))
 		return
 	}
 
-	web.WriteJSON(w, 200, output)
+	responses.WriteJSON(w, 200, output)
 }
 
 

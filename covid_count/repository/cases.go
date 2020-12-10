@@ -5,12 +5,27 @@ import (
 	"github.com/maxheckel/covid_county/covid_count/domain"
 	"strconv"
 )
+type Cases interface {
+	GetAllCasesForDays(numDays int) ([]*domain.DailyInstances, error)
+	GetAllDeathsForDays(numDays int) ([]*domain.DailyInstances, error)
+	GetAllHospitalizationsForDays(numDays int) ([]*domain.DailyInstances, error)
+	GetCountyCasesForDays(numDays int, county string) ([]*domain.DailyInstances, error)
+	GetCountyDeathsForDays(numDays int, county string) ([]*domain.DailyInstances, error)
+	GetAllDeathsForCounties(counties []string) ([]*domain.DailyInstances, error)
+	GetCountyHospitalizationsForDays(numDays int, county string) ([]*domain.DailyInstances, error)
+}
 
-type Cases struct {
+type cases struct {
 	Database *gorm.DB
 }
 
-func (c *Cases) GetAllCasesForDays(numDays int) ([]*domain.DailyInstances, error) {
+func NewCasesRepository(db *gorm.DB) Cases{
+	return &cases{
+		Database: db,
+	}
+}
+
+func (c *cases) GetAllCasesForDays(numDays int) ([]*domain.DailyInstances, error) {
 	var res []*domain.DailyInstances
 	err := c.Database.Raw(`SELECT
   sum(case_count) as count,
@@ -23,7 +38,7 @@ GROUP BY records.county, records.onset_date`).Scan(&res).Error
 	return res, err
 }
 
-func (c *Cases) GetAllDeathsForDays(numDays int) ([]*domain.DailyInstances, error) {
+func (c *cases) GetAllDeathsForDays(numDays int) ([]*domain.DailyInstances, error) {
 	var res []*domain.DailyInstances
 	err := c.Database.Raw(`SELECT
   sum(death_count) as count,
@@ -36,7 +51,7 @@ GROUP BY records.county, records.death_date`).Scan(&res).Error
 	return res, err
 }
 
-func (c *Cases) GetAllHospitalizationsForDays(numDays int) ([]*domain.DailyInstances, error) {
+func (c *cases) GetAllHospitalizationsForDays(numDays int) ([]*domain.DailyInstances, error) {
 	var res []*domain.DailyInstances
 	err := c.Database.Raw(`SELECT
   sum(hospitalized_count) as count,
@@ -49,7 +64,7 @@ GROUP BY records.county, records.admission_date`).Scan(&res).Error
 	return res, err
 }
 
-func (c *Cases) GetCountyCasesForDays(numDays int, county string) ([]*domain.DailyInstances, error) {
+func (c *cases) GetCountyCasesForDays(numDays int, county string) ([]*domain.DailyInstances, error) {
 	var res []*domain.DailyInstances
 	err := c.Database.Raw(`SELECT
   sum(case_count) as count,
@@ -63,7 +78,7 @@ GROUP BY records.county, records.onset_date`, county).Scan(&res).Error
 	return res, err
 }
 
-func (c *Cases) GetCountyDeathsForDays(numDays int, county string) ([]*domain.DailyInstances, error) {
+func (c *cases) GetCountyDeathsForDays(numDays int, county string) ([]*domain.DailyInstances, error) {
 	var res []*domain.DailyInstances
 	err := c.Database.Raw(`SELECT
   sum(death_count) as count,
@@ -77,7 +92,7 @@ GROUP BY records.county, records.death_date`, county).Scan(&res).Error
 	return res, err
 }
 
-func (c *Cases) GetAllDeathsForCounties(counties []string) ([]*domain.DailyInstances, error) {
+func (c *cases) GetAllDeathsForCounties(counties []string) ([]*domain.DailyInstances, error) {
 	var res []*domain.DailyInstances
 	err := c.Database.Raw(`SELECT
   sum(death_count) AS count,
@@ -92,7 +107,7 @@ ORDER BY death_date desc`, counties).Scan(&res).Error
 	return res, err
 }
 
-func (c *Cases) GetCountyHospitalizationsForDays(numDays int, county string) ([]*domain.DailyInstances, error) {
+func (c *cases) GetCountyHospitalizationsForDays(numDays int, county string) ([]*domain.DailyInstances, error) {
 	var res []*domain.DailyInstances
 	err := c.Database.Raw(`SELECT
   sum(hospitalized_count) as count,

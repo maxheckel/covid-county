@@ -5,6 +5,6 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-func NewCache(c *cache.Cache) *service.Cache{
-	return &service.Cache{Driver: c}
+func NewCache(c *cache.Cache) service.Cache{
+	return service.NewCacheService(c)
 }

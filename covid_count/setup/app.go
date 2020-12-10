@@ -8,17 +8,17 @@ import (
 )
 
 type App struct {
-	Config *config.Config
+	Config   *config.Config
 	Database *gorm.DB
-	Data *repository.Manager
-	Cache *service.Cache
+	Data     repository.Manager
+	Cache    service.Cache
 }
 
-func NewApp(cfg *config.Config, db *gorm.DB, mg *repository.Manager, ca *service.Cache) *App {
+func NewApp(cfg *config.Config, db *gorm.DB, mg repository.Manager, ca service.Cache) *App {
 	return &App{
 		Config:   cfg,
 		Database: db,
 		Data:     mg,
-		Cache: ca,
+		Cache:    ca,
 	}
 }

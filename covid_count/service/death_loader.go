@@ -11,16 +11,21 @@ import (
 	"path/filepath"
 	"strings"
 )
-
-type DeathLoader struct {
-	Data *repository.Manager
+type DeathLoader interface {
+	Load() error
+	downloadDeathFiles(filepath string) ([]string, error)
+	getCookieAndRequestFiles(reqBody string, client *http.Client) (*http.Response, error)
+	DownloadFiles(filepath string, resp *http.Response, extractFolder string) ([]string, error)
+}
+type deathLoader struct {
+	Data repository.Manager
 }
 
-func NewDeathLoader(data *repository.Manager) *DeathLoader {
-	return &DeathLoader{Data: data}
+func NewDeathLoader(data repository.Manager) DeathLoader {
+	return &deathLoader{Data: data}
 }
 
-func (dl *DeathLoader) Load() error{
+func (dl *deathLoader) Load() error{
 
 
 	path := "./data/imports/" + currentDate() + "deaths.zip"
@@ -69,7 +74,7 @@ func (dl *DeathLoader) Load() error{
 
 // downloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
-func (dl *DeathLoader) downloadDeathFiles(filepath string) ([]string, error) {
+func (dl *deathLoader) downloadDeathFiles(filepath string) ([]string, error) {
 
 	client := &http.Client{}
 	// Download 2020 data
@@ -100,7 +105,7 @@ func (dl *DeathLoader) downloadDeathFiles(filepath string) ([]string, error) {
 	return append(deaths2020Files, otherDeathFiles...), nil
 }
 
-func (dl *DeathLoader) getCookieAndRequestFiles(reqBody string, client *http.Client) (*http.Response, error) {
+func (dl *deathLoader) getCookieAndRequestFiles(reqBody string, client *http.Client) (*http.Response, error) {
 	cookieReq, _ := http.NewRequest("POST", "http://publicapps.odh.ohio.gov/EDW/Reports/RequestReportData", strings.NewReader(reqBody))
 	cookieReq.Header.Set("Content-Type", "application/json; charset=UTF-8")
 	cookieResp, err := client.Do(cookieReq)
@@ -118,7 +123,7 @@ func (dl *DeathLoader) getCookieAndRequestFiles(reqBody string, client *http.Cli
 	return resp, err
 }
 
-func (dl *DeathLoader) DownloadFiles(filepath string, resp *http.Response, extractFolder string) ([]string, error) {
+func (dl *deathLoader) DownloadFiles(filepath string, resp *http.Response, extractFolder string) ([]string, error) {
 	defer resp.Body.Close()
 
 	// Create the file

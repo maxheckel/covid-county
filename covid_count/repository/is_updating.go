@@ -4,13 +4,20 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/maxheckel/covid_county/covid_count/domain"
 )
+type IsUpdating interface {
+	IsUpdating() (bool, error)
+	SetIsUpdating(isUpdating bool) error
+}
 
-type IsUpdating struct {
+type isUpdating struct {
 	Database *gorm.DB
 }
 
+func NewIsUpdatingRepository(db *gorm.DB) IsUpdating{
+	return &isUpdating{Database: db}
+}
 
-func (i *IsUpdating) IsUpdating() (bool, error) {
+func (i *isUpdating) IsUpdating() (bool, error) {
 	var res domain.IsUpdating
 	err := i.Database.First(&res).Error
 	if err != nil {
@@ -19,7 +26,7 @@ func (i *IsUpdating) IsUpdating() (bool, error) {
 	return res.IsUpdating, nil
 }
 
-func (i *IsUpdating) SetIsUpdating(isUpdating bool) error {
+func (i *isUpdating) SetIsUpdating(isUpdating bool) error {
 	var res domain.IsUpdating
 	err := i.Database.First(&res).Error
 	if err != nil && !gorm.IsRecordNotFoundError(err){

@@ -7,12 +7,24 @@ import (
 	"sync"
 	"time"
 )
+type DeathRecord interface {
+	CreateMultiple(records []domain.MonthlyCountyDeaths) error
+	ClearPreviousMonthlyCountyDeaths() error
+	insertAsync(records []domain.MonthlyCountyDeaths, wg *sync.WaitGroup)
+	GetForCounty(county string) ([]*domain.MonthlyCountyDeaths, error)
+}
 
-type DeathRecord struct {
+func NewDeathRecordRepository(db *gorm.DB) DeathRecord{
+	return &deathRecord{
+		Database: db,
+	}
+}
+
+type deathRecord struct {
 	Database *gorm.DB
 }
 
-func (dr *DeathRecord) CreateMultiple(records []domain.MonthlyCountyDeaths) error {
+func (dr *deathRecord) CreateMultiple(records []domain.MonthlyCountyDeaths) error {
 	start := time.Now()
 	batches := 10
 	batchSize := len(records) / batches
@@ -33,19 +45,19 @@ func (dr *DeathRecord) CreateMultiple(records []domain.MonthlyCountyDeaths) erro
 	return nil
 }
 
-func (dr *DeathRecord) ClearPreviousMonthlyCountyDeaths() error {
+func (dr *deathRecord) ClearPreviousMonthlyCountyDeaths() error {
 	dummy := domain.MonthlyCountyDeaths{}
 	return dr.Database.Exec("TRUNCATE TABLE "+dummy.TableName()).Error
 }
 
-func (dr *DeathRecord) insertAsync(records []domain.MonthlyCountyDeaths, wg *sync.WaitGroup){
+func (dr *deathRecord) insertAsync(records []domain.MonthlyCountyDeaths, wg *sync.WaitGroup){
 	defer wg.Done()
 	for _, rec := range records {
 		dr.Database.LogMode(true).Create(&rec)
 	}
 }
 
-func (dr *DeathRecord) GetForCounty(county string) ([]*domain.MonthlyCountyDeaths, error) {
+func (dr *deathRecord) GetForCounty(county string) ([]*domain.MonthlyCountyDeaths, error) {
 	var res []*domain.MonthlyCountyDeaths
 	err := dr.Database.Where("lower(county) = lower(?)", county).Find(&res).Error
 	return res, err

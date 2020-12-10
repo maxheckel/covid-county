@@ -1,35 +1,41 @@
 package repository
 
 import "github.com/jinzhu/gorm"
-
-type Manager struct {
-	cases *Cases
-	record *Record
-	isUpdating *IsUpdating
-	deathRecords *DeathRecord
+type Manager interface {
+	IsUpdating() IsUpdating
+	Record() Record
+	Cases() Cases
+	DeathRecords() DeathRecord
 }
 
-func (m Manager) IsUpdating() *IsUpdating {
+type manager struct {
+	cases Cases
+	record Record
+	isUpdating IsUpdating
+	deathRecords DeathRecord
+}
+
+func (m manager) IsUpdating() IsUpdating {
 	return m.isUpdating
 }
 
-func (m Manager) Record() *Record {
+func (m manager) Record() Record {
 	return m.record
 }
 
-func (m Manager) Cases() *Cases {
+func (m manager) Cases() Cases {
 	return m.cases
 }
 
-func (m Manager) DeathRecords() *DeathRecord {
+func (m manager) DeathRecords() DeathRecord {
 	return m.deathRecords
 }
 
-func NewManager(db *gorm.DB) *Manager{
-	return &Manager{
-		cases:      &Cases{Database: db},
-		record:     &Record{Database: db},
-		isUpdating: &IsUpdating{Database: db},
-		deathRecords: &DeathRecord{Database: db},
+func NewManager(db *gorm.DB) Manager{
+	return &manager{
+		cases:      NewCasesRepository(db),
+		record:     NewRecordRepository(db),
+		isUpdating: NewIsUpdatingRepository(db),
+		deathRecords: NewDeathRecordRepository(db),
 	}
 }

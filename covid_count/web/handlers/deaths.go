@@ -4,15 +4,14 @@ import (
 	"github.com/maxheckel/covid_county/covid_count/domain"
 	"github.com/maxheckel/covid_county/covid_count/repository"
 	"github.com/maxheckel/covid_county/covid_count/service"
-	"github.com/maxheckel/covid_county/covid_count/web"
 	"github.com/maxheckel/covid_county/covid_count/web/responses"
 	"net/http"
 	"strings"
 )
 
 type CountiesDeaths struct {
-	Data *repository.Manager
-	Cache *service.Cache
+	Data repository.Manager
+	Cache service.Cache
 }
 
 func (c CountiesDeaths) ServeHTTP(w http.ResponseWriter, r *http.Request){
@@ -21,7 +20,7 @@ func (c CountiesDeaths) ServeHTTP(w http.ResponseWriter, r *http.Request){
 	cacheKey := countiesString + "_deaths"
 	cachedRes, found := c.Cache.Get(cacheKey)
 	if found {
-		web.WriteJSON(w, 200, cachedRes)
+		responses.WriteJSON(w, 200, cachedRes)
 		return
 	}
 	for k, v := range counties{
@@ -29,7 +28,7 @@ func (c CountiesDeaths) ServeHTTP(w http.ResponseWriter, r *http.Request){
 	}
 	countyRes, err := c.Data.Cases().GetAllDeathsForCounties(counties)
 	if err != nil {
-		web.WriteJSONError(w, r, err)
+		responses.WriteJSONError(w, r, err)
 		return
 	}
 	res := responses.CountiesDeaths{
@@ -56,6 +55,6 @@ func (c CountiesDeaths) ServeHTTP(w http.ResponseWriter, r *http.Request){
 		}
 	}
 	c.Cache.Set(cacheKey, res, 10)
-	web.WriteJSON(w, 200, res)
+	responses.WriteJSON(w, 200, res)
 
 }
