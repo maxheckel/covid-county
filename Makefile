@@ -21,17 +21,12 @@ BIN := covid_county
 # This repo's root import path (under GOPATH).
 PKG := github.com/maxheckel/covid_county
 
-# This version-strategy uses git tags to set the version string
-####VERSION ?= $(shell git describe  --match=NeVeRmAtCh --always --dirty --long)
-VERSION ?= $(shell git rev-parse --short HEAD)
-# Semantic version based on the current tagging
-SEMVER = $(shell cat VERSION)-$(VERSION)
 
 
 SRC_DIRS := cmd pkg internal # directories which hold app source (not vendored)
 
 
-LDFLAGS = -ldflags="-X '${PKG}/pkg/version.Version=${SEMVER}' -X '${PKG}/pkg/version.BuildTime=$$(date -u +%FT%TZ)'"
+
 
 
 
@@ -50,7 +45,7 @@ docker-api: docker-build
 
 docker-build:
 	@echo "$(OK_COLOR)==> Building go binary for docker image: $(NO_COLOR)"
-	CGO_ENABLED=0 GOOS=linux go build -o ./infra/bin/covid_county ${LDFLAGS} ./cmd/covid_county
+	CGO_ENABLED=0 GOOS=linux go build -o ./infra/bin/covid_county ./cmd/covid_county
 
 .PHONY: docker-db
 docker-db:
