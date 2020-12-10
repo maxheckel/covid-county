@@ -8,14 +8,6 @@ import (
 	"time"
 )
 
-const (
-	// DefaultPort is the default application port
-	DefaultPort = 80
-)
-
-var defaultOptions = []Option{
-	Port(DefaultPort),
-}
 
 
 // Server represents the basic struct
@@ -61,16 +53,8 @@ func (s *Server) Run() error {
 }
 
 // New creates a new server with options
-func New(router http.Handler, opts ...Option) (*Server, error) {
+func New(router http.Handler) (*Server, error) {
 	s := &Server{Router: router}
-
-	opts = append(defaultOptions, opts...)
-
-	for _, o := range opts {
-		if err := o.Apply(s); err != nil {
-			return nil, err
-		}
-	}
-
+	s.Port = 8000
 	return s, nil
 }

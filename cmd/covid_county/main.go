@@ -23,7 +23,7 @@ func main() {
 	cacheService := setup.NewCache(cacheDriver)
 	app := setup.NewApp(cfg, db, manager, cacheService)
 	router := setup.Router(app)
-	server, err := setup.New(router, setup.Port(cfg.Port))
+	server, err := setup.New(router)
 	if err != nil {
 		log.Fatal(err)
 	}
